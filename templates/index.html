@@ -1,3 +1,4 @@
+
 {% extends 'template.html' %}
 
 {% block content %}
@@ -10,7 +11,7 @@
             <form id="filters-form">
                 <label for="borough">Borough:</label>
                 <select id="borough" name="borough">
-                    <option value="">All</option>
+                    <option value="">Todos</option>
                     <option value="Brooklyn">Brooklyn</option>
                     <option value="Manhattan">Manhattan</option>
                     <option value="Queens">Queens</option>
@@ -19,7 +20,7 @@
                 </select>
                 <label for="cuisine">Cuisine:</label>
                 <select id="cuisine" name="cuisine">
-                    <option value="">All</option>
+                    <option value="">Todos</option>
                     <option value="American">American</option>
                     <option value="Chinese">Chinese</option>
                     <option value="Italian">Italian</option>
@@ -33,10 +34,10 @@
         <section>
             <h2>Top Restaurants</h2>
             <ul id="restaurants-list" class="no-list column">
-                <!-- This will be populated by JavaScript -->
+                
             </ul>
             <div class="pagination" id="pagination">
-                <!-- Pagination buttons will be rendered by JavaScript -->
+
             </div>
         </section>
         <section>
@@ -61,7 +62,7 @@
             function fetchRestaurants() {
                 const formData = new FormData(form);
                 const query = new URLSearchParams(formData).toString();
-                const fetchURL = query ? `/fetch_restaurants?${query}` : '/fetch_restaurants'; // Adjust fetch URL based on query presence
+                const fetchURL = query ? `/fetch_restaurants?${query}` : '/fetch_restaurants'; 
                 fetch(fetchURL)
                     .then(response => response.json())
                     .then(data => {

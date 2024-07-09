@@ -7,21 +7,21 @@
                 
                 <label for="rating">Rating:</label>
                 <select id="rating" name="rating">
-                    <option value="">All</option>
+                    <option value="">Todos</option>
                     <option value="A">A</option>
                     <option value="B">B</option>
                     <option value="C">C</option>
                 </select>
-                <button type="submit">Apply Filters</button>
+                <button type="submit">Buscar</button>
             </form>
         </section>
         <section>
             <h2>Top Restaurants</h2>
             <ul id="restaurants-list" class="no-list column">
-                <!-- This will be populated by JavaScript -->
+                
             </ul>
             <div class="pagination" id="pagination">
-                <!-- Pagination buttons will be rendered by JavaScript -->
+
             </div>
         </section>
     </main>
@@ -55,7 +55,7 @@
             function fetchRestaurantsByRating() {
                 const formData = new FormData(form);
                 const query = new URLSearchParams(formData).toString();
-                const fetchURL = query ? `/fetch_restaurants_solo_rating?${query}` : '/fetch_restaurants_solo_rating'; // Adjust fetch URL based on query presence
+                const fetchURL = query ? `/fetch_restaurants_solo_rating?${query}` : '/fetch_restaurants_solo_rating'; 
                 fetch(fetchURL)
                     .then(response => response.json())
                     .then(data => {

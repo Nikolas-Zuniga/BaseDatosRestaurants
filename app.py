@@ -10,8 +10,8 @@ app = Flask(__name__)
 CORS(app)
 
 couch = couchdb.Server('http://127.0.0.1:5984')
-couch.resource.credentials = ('admin', 'admin')
-db = couch['bd2']
+couch.resource.credentials = ('admin', '54321')
+db = couch['restos']
 
 @app.route('/')
 def index():
@@ -167,9 +167,8 @@ def fetch_restaurants_solo_rating():
 def get_restaurants_by_coordinates():
     lon = float(request.args.get('lon', '0'))
     lat = float(request.args.get('lat', '0'))
-    distance = float(request.args.get('distance', '1'))  # distancia en kilómetros
-
-    # Calcula el rango de coordenadas para la búsqueda
+    distance = float(request.args.get('distance', '1'))  
+    
     delta_lon = distance / (111.32 * cos(radians(lat)))
     delta_lat = distance / 110.574
 
@@ -241,7 +240,7 @@ def fetch_recent_openings():
     recent_date_str = request.args.get('recent_date', '')
     recent_date = datetime.strptime(recent_date_str, '%Y-%m-%d').isoformat()
 
-    # Consulta Mango para filtrar por fecha reciente
+
     mango_query = {
         "selector": {
             "grades.0.date": {

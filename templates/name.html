@@ -3,18 +3,18 @@
         <section>
             <h2>Filtro</h2>
             <form id="name-filters-form">
-                <label for="name">Name:</label>
+                <label for="name">Nombre:</label>
                 <input type="text" id="name" name="name">
-                <button type="submit">Apply Filters</button>
+                <button type="submit">Buscar</button>
             </form>
         </section>
         <section>
             <h2>Restaurants</h2>
             <ul id="restaurants-list" class="no-list column">
-                <!-- This will be populated by JavaScript -->
+
             </ul>
             <div class="pagination" id="pagination">
-                <!-- Pagination buttons will be rendered by JavaScript -->
+
             </div>
         </section>
     </main>
@@ -35,7 +35,7 @@
             function fetchRestaurantsByName() {
                 const formData = new FormData(form);
                 const query = new URLSearchParams(formData).toString();
-                const fetchURL = query ? `/restaurants_by_name?${query}` : '/restaurants_by_name'; // Adjust fetch URL based on query presence
+                const fetchURL = query ? `/restaurants_by_name?${query}` : '/restaurants_by_name';
                 fetch(fetchURL)
                     .then(response => response.json())
                     .then(data => {
