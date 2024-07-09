@@ -6,13 +6,12 @@ import requests
 from requests.auth import HTTPBasicAuth
 from datetime import datetime
 
-
 app = Flask(__name__)
 CORS(app)
 
 couch = couchdb.Server('http://127.0.0.1:5984')
-couch.resource.credentials = ('admin', '12345')
-db = couch['bd2']
+couch.resource.credentials = ('admin', '54321')
+db = couch['restos']
 
 @app.route('/')
 def index():
@@ -50,9 +49,18 @@ def zipcode():
 def coordinates():
     return render_template('coordinates.html')
 
+@app.route('/score')
+def score():
+    return render_template('score.html')
+
+@app.route('/score_comparar')
+def score_comparar():
+    return render_template('score_comparar.html')
+
 @app.route('/recent_openings')
 def recent_openings():
     return render_template('recent_openings.html')
+
 
 @app.route('/fetch_restaurants', methods=['GET'])
 def fetch_restaurants():
@@ -155,49 +163,6 @@ def fetch_restaurants_solo_rating():
     restaurants = [doc for doc in response]
     return jsonify(restaurants), 200
 
-
-
-# Consulta para buscar restaurantes con rating mínimo
-@app.route('/restaurants_with_min_rating', methods=['GET'])
-def get_restaurants_with_min_rating():
-    min_rating = float(request.args.get('min_rating', '0'))
-    query_params = {
-        'selector': {'rating': {'$gte': min_rating}},
-        'fields': ['name', 'rating', 'location', 'cuisine'],
-        'sort': [{'rating': 'desc'}],
-        'limit': 10
-    }
-    response = db.find(query_params)
-    return jsonify([doc for doc in response]), 200
-
-
-
-# Consulta para buscar restaurantes por tipo de cocina
-@app.route('/restaurants_by_cuisine', methods=['GET'])
-def get_restaurants_by_cuisine():
-    cuisine = request.args.get('cuisine', '')
-    query_params = {
-        'selector': {'cuisine': {'$regex': cuisine, '$options': 'i'}},  # Case insensitive search
-        'fields': ['name', 'rating', 'location', 'cuisine'],
-        'limit': 10
-    }
-    response = db.find(query_params)
-    return jsonify([doc for doc in response]), 200
-
-# Consulta para ordenar restaurantes por rating de menor a mayor
-@app.route('/restaurants_sorted_by_rating', methods=['GET'])
-def get_restaurants_sorted_by_rating():
-    query_params = {
-        'selector': {},
-        'fields': ['name', 'rating', 'location'],
-        'sort': [{'rating': 'asc'}],
-        'limit': 10
-    }
-    response = db.find(query_params)
-    return jsonify([doc for doc in response]), 200
-
-
-
 @app.route('/restaurants_by_coordinates', methods=['GET'])
 def get_restaurants_by_coordinates():
     lon = float(request.args.get('lon', '0'))
@@ -225,6 +190,52 @@ def get_restaurants_by_coordinates():
     restaurants = [doc for doc in response]
     return jsonify(restaurants), 200
 
+
+
+
+
+@app.route('/restaurants_by_score', methods=['GET'])
+def get_restaurants_by_score():
+    score = request.args.get('score', '')
+
+    mango_query = {
+        'selector': {
+            'grades.0.score': int(score)
+        },
+        'limit': 100
+    }
+
+    response = db.find(mango_query)
+    restaurants = [doc for doc in response]
+    return jsonify(restaurants), 200
+
+
+@app.route('/restaurants_by_score_comparison', methods=['GET'])
+def get_restaurants_by_score_comparison():
+    score = request.args.get('score', '')
+    comparison = request.args.get('comparison', 'lt')
+
+    if comparison == 'lt':
+        mango_query = {
+            'selector': {
+                'grades.0.score': {'$lt': int(score)}
+            },
+            'limit': 100
+        }
+    elif comparison == 'gt':
+        mango_query = {
+            'selector': {
+                'grades.0.score': {'$gt': int(score)}
+            },
+            'limit': 100
+        }
+    else:
+        return jsonify({'error': 'Invalid comparison parameter'}), 400
+
+    response = db.find(mango_query)
+    restaurants = [doc for doc in response]
+    return jsonify(restaurants), 200
+
 @app.route('/fetch_recent_openings', methods=['GET'])
 def fetch_recent_openings():
     recent_date_str = request.args.get('recent_date', '')
@@ -244,6 +255,8 @@ def fetch_recent_openings():
     restaurants = [doc for doc in response]
 
     return jsonify(restaurants), 200
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
