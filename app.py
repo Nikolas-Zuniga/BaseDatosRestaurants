@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request, render_template
+from math import radians, cos, sin, asin, sqrt
 from flask_cors import CORS
 import couchdb
 import requests
@@ -8,8 +9,8 @@ app = Flask(__name__)
 CORS(app)
 
 couch = couchdb.Server('http://127.0.0.1:5984')
-couch.resource.credentials = ('admin', '54321')
-db = couch['restos']
+couch.resource.credentials = ('admin', '12345')
+db = couch['bd2']
 
 @app.route('/')
 def index():
@@ -42,6 +43,10 @@ def location():
 @app.route('/zipcode')
 def zipcode():
     return render_template('zipcode.html')
+
+@app.route('/coordinates')
+def coordinates():
+    return render_template('coordinates.html')
 
 
 @app.route('/fetch_restaurants', methods=['GET'])
@@ -185,6 +190,36 @@ def get_restaurants_sorted_by_rating():
     }
     response = db.find(query_params)
     return jsonify([doc for doc in response]), 200
+
+
+
+@app.route('/restaurants_by_coordinates', methods=['GET'])
+def get_restaurants_by_coordinates():
+    lon = float(request.args.get('lon', '0'))
+    lat = float(request.args.get('lat', '0'))
+    distance = float(request.args.get('distance', '1'))  # distancia en kilómetros
+
+    # Calcula el rango de coordenadas para la búsqueda
+    delta_lon = distance / (111.32 * cos(radians(lat)))
+    delta_lat = distance / 110.574
+
+    min_lon = lon - delta_lon
+    max_lon = lon + delta_lon
+    min_lat = lat - delta_lat
+    max_lat = lat + delta_lat
+
+    mango_query = {
+        "selector": {
+            "address.coord.0": {"$gte": min_lon, "$lte": max_lon},
+            "address.coord.1": {"$gte": min_lat, "$lte": max_lat}
+        },
+        "limit": 100
+    }
+
+    response = db.find(mango_query)
+    restaurants = [doc for doc in response]
+    return jsonify(restaurants), 200
+
 
 
 if __name__ == '__main__':
