@@ -1,0 +1,157 @@
+{% extends 'template.html' %}
+{% block content %}
+        <section>
+            <h2>Filters</h2>
+            <form id="rating-filters-form">
+                <label for="borough">Borough:</label>
+                <select id="borough" name="borough">
+                    <option value="">All</option>
+                    <option value="Brooklyn">Brooklyn</option>
+                    <option value="Manhattan">Manhattan</option>
+                    <option value="Queens">Queens</option>
+                    <option value="Bronx">Bronx</option>
+                    <option value="Staten Island">Staten Island</option>
+                </select>
+                <label for="cuisine">Cuisine:</label>
+                <select id="cuisine" name="cuisine">
+                    <option value="">All</option>
+                    <option value="American">American</option>
+                    <option value="Chinese">Chinese</option>
+                    <option value="Italian">Italian</option>
+                    <option value="Japanese">Japanese</option>
+                    <option value="Mexican">Mexican</option>
+                </select>
+                <label for="rating">Rating:</label>
+                <select id="rating" name="rating">
+                    <option value="">All</option>
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="C">C</option>
+                </select>
+                <button type="submit">Apply Filters</button>
+            </form>
+        </section>
+        <section>
+            <h2>Top Restaurants</h2>
+            <ul id="restaurants-list" class="no-list column">
+                <!-- This will be populated by JavaScript -->
+            </ul>
+            <div class="pagination" id="pagination">
+                <!-- Pagination buttons will be rendered by JavaScript -->
+            </div>
+        </section>
+    </main>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('rating-filters-form');
+            const restaurantsList = document.getElementById('restaurants-list');
+            const pagination = document.getElementById('pagination');
+            const itemsPerPage = 30;
+            let currentPage = 1;
+            let filteredData = [];
+
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                fetchRestaurantsByRating();
+            });
+
+            function fetchRestaurantsByRating() {
+                const formData = new FormData(form);
+                const query = new URLSearchParams(formData).toString();
+                const fetchURL = query ? `/fetch_restaurants_by_rating?${query}` : '/fetch_restaurants_by_rating'; // Adjust fetch URL based on query presence
+                fetch(fetchURL)
+                    .then(response => response.json())
+                    .then(data => {
+                        filteredData = data;
+                        renderRestaurants();
+                        renderPagination();
+                    })
+                    .catch(error => console.error('Error fetching data:', error));
+            }
+
+            function renderRestaurants() {
+                restaurantsList.innerHTML = '';
+                const start = (currentPage - 1) * itemsPerPage;
+                const end = start + itemsPerPage;
+                const pageData = filteredData.slice(start, end);
+
+                if (pageData.length > 0) {
+                    pageData.forEach(restaurant => {
+                        const li = document.createElement('li');
+                        li.className = 'restaurante';
+                        li.innerHTML = `
+                            <h3>${restaurant.name}</h3>
+                            <p><strong>Rating:</strong> ${restaurant.grades[0].grade}</p>
+                            <p><strong>Location:</strong> ${restaurant.address.street}, ${restaurant.address.zipcode}</p>
+                            <p><strong>Cuisine:</strong> ${restaurant.cuisine}</p>
+                            <p><strong>Borough:</strong> ${restaurant.borough}</p>
+                        `;
+                        restaurantsList.appendChild(li);
+                    });
+                } else {
+                    const li = document.createElement('li');
+                    li.className = 'restaurante';
+                    li.textContent = 'No restaurants found matching your criteria.';
+                    restaurantsList.appendChild(li);
+                }
+            }
+
+            function renderPagination() {
+                pagination.innerHTML = '';
+                const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+
+                const maxVisibleButtons = 5;
+                const halfMaxVisibleButtons = Math.floor(maxVisibleButtons / 2);
+
+                let startPage = currentPage - halfMaxVisibleButtons;
+                let endPage = currentPage + halfMaxVisibleButtons;
+
+                if (startPage < 1) {
+                    startPage = 1;
+                    endPage = Math.min(startPage + maxVisibleButtons - 1, totalPages);
+                }
+
+                if (endPage > totalPages) {
+                    endPage = totalPages;
+                    startPage = Math.max(endPage - maxVisibleButtons + 1, 1);
+                }
+
+                if (startPage > 1) {
+                    addPaginationButton(1);
+                    if (startPage > 2) {
+                        pagination.appendChild(document.createTextNode(' ... '));
+                    }
+                }
+
+                for (let page = startPage; page <= endPage; page++) {
+                    addPaginationButton(page);
+                }
+
+                if (endPage < totalPages) {
+                    if (endPage < totalPages - 1) {
+                        pagination.appendChild(document.createTextNode(' ... '));
+                    }
+                    addPaginationButton(totalPages);
+                }
+
+                function addPaginationButton(page) {
+                    const button = document.createElement('button');
+                    button.innerText = page;
+                    button.addEventListener('click', () => {
+                        currentPage = page;
+                        renderRestaurants();
+                        renderPagination();
+                    });
+                    if (page === currentPage) {
+                        button.style.backgroundColor = 'var(--color-select)';
+                    }
+                    pagination.appendChild(button);
+                }
+            }
+
+            fetchRestaurantsByRating();
+        });
+    </script>
+{% endblock %}
+</body>
+</html>

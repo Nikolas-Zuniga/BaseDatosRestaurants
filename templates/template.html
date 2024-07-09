@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Restaurant Ranking</title>
+</head>
+<body>
+    <header>
+        <h1>Restaurant Ranking</h1>
+        <nav class="nav-head">
+            <ul class="no-list">
+                <li><a class="link-head" href="/">Home</a></li>
+                <li><a class="link-head" href="/rating">Buscar por Calificación</a></li>
+                <li><a class="link-head" href="/name">Buscar por Nombre</a></li>
+                <li><a class="link-head" href="/minrating">Buscar por Calificación minima</a></li>
+                <li><a class="link-head" href="/solo_rating">Buscar por Calificación</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    <footer>
+        <div class="contact">
+            <h2>Contact</h2>
+            <p>For any inquiries or feedback, please feel free to contact us:</p>
+            <ul class="no-list column">
+                <li>Email: info@restaurantranking.com</li>
+                <li>Phone: +1 123-456-7890</li>
+                <li>Address: 123 Main Street, City, Country</li>
+            </ul>
+        </div>
+        <p>Restaurant Ranking &copy; 2024</p>
+    </footer>
