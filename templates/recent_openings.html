@@ -1,0 +1,31 @@
+{% extends 'template.html' %}
+{% block content %}
+    <main>
+        <section>
+            <form id="recentForm">
+                <label for="recent_date">Fecha Reciente (YYYY-MM-DD):</label>
+                <input type="date" id="recent_date" name="recent_date">
+                <button type="submit">Buscar</button>
+            </form>
+        </section>
+        <section id="restaurants-list"></section>
+    </main>
+    <script>
+        document.getElementById('recentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const recentDate = document.getElementById('recent_date').value;
+            fetch(`/fetch_recent_openings?recent_date=${recentDate}`)
+                .then(response => response.json())
+                .then(data => {
+                    const list = document.getElementById('restaurants-list');
+                    list.innerHTML = '';
+                    data.forEach(restaurant => {
+                        const item = document.createElement('div');
+                        item.classList.add('restaurante');
+                        item.innerHTML = `<h3>${restaurant.name}</h3><p>Fecha de Calificación Reciente: ${restaurant.grades[0].date}</p>`;
+                        list.appendChild(item);
+                    });
+                });
+        });
+    </script>
+{% endblock %}
