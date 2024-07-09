@@ -4,6 +4,8 @@ from flask_cors import CORS
 import couchdb
 import requests
 from requests.auth import HTTPBasicAuth
+from datetime import datetime
+
 
 app = Flask(__name__)
 CORS(app)
@@ -48,6 +50,9 @@ def zipcode():
 def coordinates():
     return render_template('coordinates.html')
 
+@app.route('/recent_openings')
+def recent_openings():
+    return render_template('recent_openings.html')
 
 @app.route('/fetch_restaurants', methods=['GET'])
 def fetch_restaurants():
@@ -220,7 +225,25 @@ def get_restaurants_by_coordinates():
     restaurants = [doc for doc in response]
     return jsonify(restaurants), 200
 
+@app.route('/fetch_recent_openings', methods=['GET'])
+def fetch_recent_openings():
+    recent_date_str = request.args.get('recent_date', '')
+    recent_date = datetime.strptime(recent_date_str, '%Y-%m-%d').isoformat()
 
+    # Consulta Mango para filtrar por fecha reciente
+    mango_query = {
+        "selector": {
+            "grades.0.date": {
+                "$gte": recent_date
+            }
+        },
+        "limit": 100
+    }
+
+    response = db.find(mango_query)
+    restaurants = [doc for doc in response]
+
+    return jsonify(restaurants), 200
 
 if __name__ == '__main__':
     app.run(debug=True)
