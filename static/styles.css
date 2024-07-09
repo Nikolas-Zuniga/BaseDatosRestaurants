@@ -45,7 +45,8 @@
     .nav-head{
         display: flex;
         justify-content: center;
-        width: 900px;
+        /* width: 900px; */
+        background-color: var(--color-oscuro);
         margin: auto;
         padding: 0;
     }
@@ -66,8 +67,8 @@
         margin: 0 1px;
         margin-top: 20px;
         padding: 5px 10px;
-        width: 225px;
-        background-color: var(--color-oscuro);
+        /* width: 225px; */
+        /* background-color: var(--color-oscuro); */
         transition: ease-in 0.2s;
         -webkit-transition: ease-in 0.2s;
         -moz-transition: ease-in 0.2s;
@@ -75,7 +76,7 @@
         -o-transition: ease-in 0.2s;
     }
 
-    .link-head:hover{
+    .no-list > li:hover{
         background-color: var(--color-select);
         color: var(--color-base);
     }

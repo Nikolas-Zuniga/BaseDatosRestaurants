@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurantes por Calificación Específica</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Restaurantes por Calificación Específica</h1>
+    </header>
+    <section>
+        <h2>Filtrar por Calificación</h2>
+        <form id="rating-form">
+            <label for="rating">Calificación:</label>
+            <input type="text" id="rating" name="rating" placeholder="Ingrese la calificación (A, B, C, etc.)">
+            <button type="submit">Buscar</button>
+        </form>
+    </section>
+    <section>
+        <h2>Resultados</h2>
+        <ul id="restaurants-list" class="no-list column"></ul>
+    </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('rating-form');
+            const restaurantsList = document.getElementById('restaurants-list');
+
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                fetchRestaurantsByRating();
+            });
+
+            function fetchRestaurantsByRating() {
+                const formData = new FormData(form);
+                const query = new URLSearchParams(formData).toString();
+                const fetchURL = `/restaurants_by_specific_rating?${query}`;
+                fetch(fetchURL)
+                    .then(response => response.json())
+                    .then(data => renderRestaurants(data))
+                    .catch(error => console.error('Error fetching data:', error));
+            }
+
+            function renderRestaurants(data) {
+                restaurantsList.innerHTML = '';
+                if (data.length > 0) {
+                    data.forEach(restaurant => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `
+                            <h3>${restaurant.name}</h3>
+                            <p><strong>Calificación:</strong> ${restaurant.grades[0].grade}</p>
+                            <p><strong>Dirección:</strong> ${restaurant.address.street}, ${restaurant.address.zipcode}</p>
+                            <p><strong>Tipo de Cocina:</strong> ${restaurant.cuisine}</p>
+                            <p><strong>Barrio:</strong> ${restaurant.borough}</p>
+                        `;
+                        restaurantsList.appendChild(li);
+                    });
+                } else {
+                    const li = document.createElement('li');
+                    li.textContent = 'No se encontraron restaurantes con esa calificación.';
+                    restaurantsList.appendChild(li);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

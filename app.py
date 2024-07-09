@@ -10,8 +10,8 @@ app = Flask(__name__)
 CORS(app)
 
 couch = couchdb.Server('http://127.0.0.1:5984')
-couch.resource.credentials = ('admin', '54321')
-db = couch['restos']
+couch.resource.credentials = ('admin', 'admin')
+db = couch['bd2']
 
 @app.route('/')
 def index():
