@@ -1,0 +1,52 @@
+{% extends 'template.html' %}
+{% block content %}
+    <main>
+        <section>
+            <form id="coordinates-form">
+                <label for="lon">Longitud:</label>
+                <input type="text" id="lon" name="lon" required>
+                <label for="lat">Latitud:</label>
+                <input type="text" id="lat" name="lat" required>
+                <label for="distance">Distancia (en metros):</label>
+                <input type="text" id="distance" name="distance" required>
+                <button type="submit">Buscar</button>
+            </form>
+        </section>
+        <section id="restaurants-list" class="column"></section>
+    </main>
+    <footer>
+        <div class="contact">
+            <p>Desarrollado por Niko, Jean y Sergio</p>
+            <p>Contacto: tuemail@example.com</p>
+        </div>
+    </footer>
+    <script>
+        document.getElementById('coordinates-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const lon = document.getElementById('lon').value;
+            const lat = document.getElementById('lat').value;
+            const distance = document.getElementById('distance').value;
+
+            fetch(`/restaurants_by_coordinates?lon=${lon}&lat=${lat}&distance=${distance}`)
+                .then(response => response.json())
+                .then(data => {
+                    const restaurantsList = document.getElementById('restaurants-list');
+                    restaurantsList.innerHTML = '';
+                    data.forEach(restaurant => {
+                        const restaurantDiv = document.createElement('div');
+                        restaurantDiv.classList.add('restaurante');
+                        restaurantDiv.innerHTML = `
+                            <h3>${restaurant.name}</h3>
+                            <p>${restaurant.address.building} ${restaurant.address.street}, ${restaurant.address.zipcode}</p>
+                            <p>Borough: ${restaurant.borough}</p>
+                            <p>Cuisine: ${restaurant.cuisine}</p>
+                            <p>Grade: ${restaurant.grades[0].grade}</p>
+                            <p>Score: ${restaurant.grades[0].score}</p>
+                        `;
+                        restaurantsList.appendChild(restaurantDiv);
+                    });
+                })
+                .catch(error => console.error('Error:', error));
+        });
+    </script>
+{% endblock %}
