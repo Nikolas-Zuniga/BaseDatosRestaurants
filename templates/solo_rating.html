@@ -1,25 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <title>Search by Rating</title>
-</head>
-<body>
-    <header>
-        <h1>Restaurant Ranking</h1>
-        <nav class="nav-head">
-            <ul class="no-list">
-                <li><a class="link-head" href="/">Home</a></li>
-                <li><a class="link-head" href="#">Top Restaurants</a></li>
-                <li><a class="link-head" href="/recent_rating">Calificacion mas Reciente</a></li>
-                <li><a class="link-head" href="/rating">Filtrar con Calificacion</a></li>
-                <li><a class="link-head" href="/solo_rating">Buscar por Calificación</a></li>
-            </ul>
-        </nav>
-    </header>
-    <main>
+{% extends 'template.html' %}
+
+{% block content %}
         <section>
             <h2>Filters</h2>
             <form id="rating-filters-form">
@@ -168,5 +149,6 @@
             fetchRestaurantsByRating();
         });
     </script>
+    {% endblock %}
 </body>
 </html>

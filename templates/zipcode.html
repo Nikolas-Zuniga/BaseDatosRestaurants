@@ -1,10 +1,12 @@
 {% extends 'template.html' %}
+
 {% block content %}
+    <main>
         <section>
             <h2>Filters</h2>
-            <form id="name-filters-form">
-                <label for="name">Name:</label>
-                <input type="text" id="name" name="name">
+            <form id="location-filters-form">
+                <label for="location">Location:</label>
+                <input type="text" id="location" name="location">
                 <button type="submit">Apply Filters</button>
             </form>
         </section>
@@ -18,9 +20,10 @@
             </div>
         </section>
     </main>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('name-filters-form');
+            const form = document.getElementById('location-filters-form');
             const restaurantsList = document.getElementById('restaurants-list');
             const pagination = document.getElementById('pagination');
             const itemsPerPage = 30;
@@ -29,13 +32,13 @@
 
             form.addEventListener('submit', function(event) {
                 event.preventDefault();
-                fetchRestaurantsByName();
+                fetchRestaurantsByZipCode();
             });
 
-            function fetchRestaurantsByName() {
+            function fetchRestaurantsByZipCode() {
                 const formData = new FormData(form);
                 const query = new URLSearchParams(formData).toString();
-                const fetchURL = query ? `/restaurants_by_name?${query}` : '/restaurants_by_name'; // Adjust fetch URL based on query presence
+                const fetchURL = query ? `/restaurants_by_zipcode?${query}` : '/restaurants_by_zipcode';
                 fetch(fetchURL)
                     .then(response => response.json())
                     .then(data => {
@@ -58,7 +61,7 @@
                         li.className = 'restaurante';
                         li.innerHTML = `
                             <h3>${restaurant.name}</h3>
-                            <p><strong>Rating:</strong> ${restaurant.grades[0].grade}</p>
+                            <p><strong>Rating:</strong> ${getLatestRating(restaurant)}</p>
                             <p><strong>Location:</strong> ${restaurant.address.street}, ${restaurant.address.zipcode}</p>
                             <p><strong>Cuisine:</strong> ${restaurant.cuisine}</p>
                         `;
@@ -70,6 +73,14 @@
                     li.textContent = 'No restaurants found matching your criteria.';
                     restaurantsList.appendChild(li);
                 }
+            }
+
+            function getLatestRating(restaurant) {
+                if (restaurant.grades && restaurant.grades.length > 0) {
+                    const latestGrade = restaurant.grades[restaurant.grades.length - 1].grade;
+                    return latestGrade;
+                }
+                return 'No rating available';
             }
 
             function renderPagination() {
@@ -125,9 +136,7 @@
                 }
             }
 
-            fetchRestaurantsByName();
+            fetchRestaurantsByZipCode();
         });
     </script>
 {% endblock %}
-</body>
-</html>

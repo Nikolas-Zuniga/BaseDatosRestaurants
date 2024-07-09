@@ -35,6 +35,14 @@ def solo_rating():
 def recent_rating():
     return render_template('recent_rating.html')
 
+@app.route('/location')
+def location():
+    return render_template('location.html')
+
+@app.route('/zipcode')
+def zipcode():
+    return render_template('zipcode.html')
+
 
 @app.route('/fetch_restaurants', methods=['GET'])
 def fetch_restaurants():
@@ -49,11 +57,10 @@ def fetch_restaurants():
         }
     }
 
-    response = requests.post(f'http://localhost:5984/restos/_find', json=mango_query, auth=HTTPBasicAuth('admin', '54321'))
-    data = response.json()
-    restaurants = data.get('docs', [])
+    response = db.find(mango_query)
+    restaurants = [doc for doc in response]
+    return jsonify(restaurants), 200
 
-    return jsonify(restaurants)
 
 @app.route('/fetch_restaurants_by_rating', methods=['GET'])
 def fetch_restaurants_by_rating():
@@ -67,39 +74,78 @@ def fetch_restaurants_by_rating():
             "cuisine": {"$regex": f"{cuisine}.*"} if cuisine else {"$exists": True},
             "grades.0.grade": {"$regex": f"{rating}.*"} if rating else {"$exists": True}
         },
-        "limit": 20000  # Adjust the limit as per your requirement
+        "limit": 20000 
     }
 
-    response = requests.post(f'http://localhost:5984/restos/_find', json=mango_query, auth=HTTPBasicAuth('admin', '54321'))
-    data = response.json()
-    restaurants = data.get('docs', [])
+    response = db.find(mango_query)
+    restaurants = [doc for doc in response]
+    return jsonify(restaurants), 200
 
-    return jsonify(restaurants)
 
-# Consulta para ordenar restaurantes por rating de menor a mayor
-@app.route('/restaurants_sorted_by_rating', methods=['GET'])
-def get_restaurants_sorted_by_rating():
-    query_params = {
-        'selector': {},
-        'fields': ['name', 'rating', 'location'],
-        'sort': [{'rating': 'asc'}],
-        'limit': 10
-    }
-    response = db.find(query_params)
-    return jsonify([doc for doc in response]), 200
-
-# Consulta para buscar restaurantes por nombre
 @app.route('/restaurants_by_name', methods=['GET'])
 def get_restaurants_by_name():
     name = request.args.get('name', '')
-    query_params = {
-        'selector': {'name': {'$regex': f'(?i){name}'}},  # Case insensitive search
-        'fields': ['name', 'rating', 'location', 'cuisine'],
-        'limit': 10
+    
+    mango_query = {
+        'selector': {
+            'name': {'$regex': f'(?i){name}'}
+            },  
+
+        'limit': 100
     }
-    response = db.find(query_params)
+
+    response = db.find(mango_query)
     restaurants = [doc for doc in response]
     return jsonify(restaurants), 200
+
+@app.route('/restaurants_by_location', methods=['GET'])
+def get_restaurants_by_location():
+    location = request.args.get('location', '')
+
+    mango_query = {
+        'selector': {
+            'address.street': {'$regex': f'(?i){location}'}
+            },  
+
+        'limit': 100
+    }
+
+    response = db.find(mango_query)
+    restaurants = [doc for doc in response]
+    return jsonify(restaurants), 200
+
+@app.route('/restaurants_by_zipcode', methods=['GET'])
+def get_restaurants_by_zipcode():
+    zipcode = request.args.get('location', '')
+
+    mango_query = {
+        'selector': {
+            'address.zipcode': {'$regex': f'(?i){zipcode}'}
+            },  
+
+        'limit': 100
+    }
+
+    response = db.find(mango_query)
+    restaurants = [doc for doc in response]
+    return jsonify(restaurants), 200
+
+@app.route('/fetch_restaurants_solo_rating', methods=['GET'])
+def fetch_restaurants_solo_rating():
+    rating = request.args.get('rating', '')
+
+    mango_query = {
+        "selector": {
+            "grades.0.grade": {"$regex": f"{rating}.*"} if rating else {"$exists": True}
+        },
+        "limit":20000
+    }
+
+    response = db.find(mango_query)
+    restaurants = [doc for doc in response]
+    return jsonify(restaurants), 200
+
+
 
 # Consulta para buscar restaurantes con rating mínimo
 @app.route('/restaurants_with_min_rating', methods=['GET'])
@@ -114,35 +160,7 @@ def get_restaurants_with_min_rating():
     response = db.find(query_params)
     return jsonify([doc for doc in response]), 200
 
-@app.route('/fetch_restaurants_solo_rating', methods=['GET'])
-def fetch_restaurants_solo_rating():
-    rating = request.args.get('rating', '')
 
-    mango_query = {
-        "selector": {
-            "grades.0.grade": {"$regex": f"{rating}.*"} if rating else {"$exists": True}
-        },
-        "limit":20000
-    }
-
-    response = requests.post(f'http://localhost:5984/restos/_find', json=mango_query, auth=HTTPBasicAuth('admin', '54321'))
-    data = response.json()
-    restaurants = data.get('docs', [])
-
-    return jsonify(restaurants)
-
-
-# Consulta para buscar restaurantes por ubicación
-@app.route('/restaurants_by_location', methods=['GET'])
-def get_restaurants_by_location():
-    location = request.args.get('location', '')
-    query_params = {
-        'selector': {'location': {'$regex': location, '$options': 'i'}},  # Case insensitive search
-        'fields': ['name', 'rating', 'location', 'cuisine'],
-        'limit': 10
-    }
-    response = db.find(query_params)
-    return jsonify([doc for doc in response]), 200
 
 # Consulta para buscar restaurantes por tipo de cocina
 @app.route('/restaurants_by_cuisine', methods=['GET'])
@@ -151,6 +169,18 @@ def get_restaurants_by_cuisine():
     query_params = {
         'selector': {'cuisine': {'$regex': cuisine, '$options': 'i'}},  # Case insensitive search
         'fields': ['name', 'rating', 'location', 'cuisine'],
+        'limit': 10
+    }
+    response = db.find(query_params)
+    return jsonify([doc for doc in response]), 200
+
+# Consulta para ordenar restaurantes por rating de menor a mayor
+@app.route('/restaurants_sorted_by_rating', methods=['GET'])
+def get_restaurants_sorted_by_rating():
+    query_params = {
+        'selector': {},
+        'fields': ['name', 'rating', 'location'],
+        'sort': [{'rating': 'asc'}],
         'limit': 10
     }
     response = db.find(query_params)
